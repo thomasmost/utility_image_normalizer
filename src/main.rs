@@ -5,13 +5,13 @@ use std::ffi::OsStr;
 use std::env;
 use image::io::Reader as ImageReader;
 
-fn process_image(path_string: &str, file_stem: &str, out_directory: &str) -> std::result::Result<String, ImageError> {
+fn process_image(path_string: &str, file_stem: &str, ext: &str, out_directory: &str) -> std::result::Result<String, ImageError> {
     let mut img = ImageReader::open(path_string)?.decode()?;
-    let new_path = format!("{}{}_crop.jpeg", out_directory, file_stem);
+    let new_path = format!("{}{}_crop.{}", out_directory, file_stem, ext);
 
     let (width, height) = img.dimensions();
 
-    println!("image is height {} by width {}", height, width);
+    println!("Cropping {}", file_stem);
     let starting_x = width / 2 - 256;
     let starting_y = height / 2 - 256;
 
@@ -50,15 +50,15 @@ fn main() {
         let path_string = path.unwrap().path().display().to_string();
         let file_extension = get_extension_from_path(&path_string);
         let file_stem = get_file_stem_from_path(&path_string);
-        println!("Path: {}", path_string);
-        println!("File stem: {}", file_stem);
+        // println!("Path: {}", path_string);
+        // println!("File stem: {}", file_stem);
         match file_extension {
             // The division was valid
             Some(ext) => {
                 println!("Extension: {}", ext);
-                if ext == "jpeg" {
-                    match process_image(&path_string, file_stem, out_directory) {
-                        Ok(_) => println!("Done"),
+                if ext == "jpeg" || ext == "jpg" {
+                    match process_image(&path_string, file_stem, ext, out_directory) {
+                        Ok(_) => println!("...Done"),
                         Err(err) => {
                             println!("There was an error: {}", err);
                         }
