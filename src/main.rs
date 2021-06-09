@@ -12,6 +12,10 @@ fn process_image(path_string: &str, file_stem: &str, ext: &str, out_directory: &
     let (width, height) = img.dimensions();
 
     println!("Cropping {}", file_stem);
+    if width < 512 || height < 512 {
+        println!("SKIPPING: Image not of sufficient resolution");
+        return Ok("Okay".to_string());
+    }
     let starting_x = width / 2 - 256;
     let starting_y = height / 2 - 256;
 
@@ -55,7 +59,6 @@ fn main() {
         match file_extension {
             // The division was valid
             Some(ext) => {
-                println!("Extension: {}", ext);
                 if ext == "jpeg" || ext == "jpg" {
                     match process_image(&path_string, file_stem, ext, out_directory) {
                         Ok(_) => println!("...Done"),
