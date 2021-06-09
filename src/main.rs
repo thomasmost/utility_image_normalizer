@@ -3,8 +3,6 @@ use image::{GenericImageView, ImageError};
 use std::fs;
 use std::ffi::OsStr;
 use std::env;
-use std::fs::File;
-use std::io::prelude::*;
 use image::io::Reader as ImageReader;
 
 fn process_image(path_string: &str, file_stem: &str, out_directory: &str) -> std::result::Result<String, ImageError> {
