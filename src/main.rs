@@ -5,7 +5,7 @@ use std::ffi::OsStr;
 use std::env;
 use image::io::Reader as ImageReader;
 
-fn process_image(path_string: &str, file_stem: &str, ext: &str, out_directory: &str) -> std::result::Result<String, ImageError> {
+fn process_image(path_string: &str, file_stem: &str, ext: &str, out_directory: &str) -> std::result::Result<u128, ImageError> {
     let mut img = ImageReader::open(path_string)?.decode()?;
     let new_path = format!("{}{}_crop.{}", out_directory, file_stem, ext);
 
@@ -14,7 +14,7 @@ fn process_image(path_string: &str, file_stem: &str, ext: &str, out_directory: &
     println!("Cropping {}", file_stem);
     if width < 512 || height < 512 {
         println!("SKIPPING: Image not of sufficient resolution");
-        return Ok("Okay".to_string());
+        return Ok(0);
     }
     let starting_x = width / 2 - 256;
     let starting_y = height / 2 - 256;
@@ -22,7 +22,7 @@ fn process_image(path_string: &str, file_stem: &str, ext: &str, out_directory: &
     img
     .crop(starting_x, starting_y, 512, 512)
     .save(new_path)?;
-    return Ok("Okay".to_string());
+    return Ok(1);
 }
 
 fn get_extension_from_path(path_string: &str) -> Option<&str> {
@@ -48,6 +48,8 @@ fn main() {
     let in_directory = &args[1];
     let out_directory = &args[2];
     // "/Users/thomas/img_normalizer"
+    let mut cropped_count: u128 = 0;
+    let mut image_count: u128 = 0;
     let paths = fs::read_dir(in_directory).unwrap();
 
     for path in paths {
@@ -60,8 +62,12 @@ fn main() {
             // The division was valid
             Some(ext) => {
                 if ext == "jpeg" || ext == "jpg" {
+                    image_count += 1;
                     match process_image(&path_string, file_stem, ext, out_directory) {
-                        Ok(_) => println!("...Done"),
+                        Ok(success) => {
+                            cropped_count += success;
+                            println!("...Done")
+                        },
                         Err(err) => {
                             println!("There was an error: {}", err);
                         }
@@ -72,6 +78,9 @@ fn main() {
         }
     }
 
+    println!("Finished normalization!");
+    println!("Total Images  {}", image_count);
+    println!("Total Cropped {}", cropped_count);
 
     // match process_image() {
     //     Ok(_) => println!("Done"),
